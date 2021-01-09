@@ -19,6 +19,10 @@ namespace SillBot.Modules
         public Task PingAsync()
             => ReplyAsync("pong!");
 
+        [Command("hit")]
+        public Task HitAsync()
+            => ReplyAsync("Ouch! Pls no bully");
+
         [Command("cat")]
         public async Task CatAsync()
         {
@@ -67,45 +71,5 @@ namespace SillBot.Modules
         [RequireContext(ContextType.Guild, ErrorMessage = "Sorry, this command must be ran from within a server, not a DM!")]
         public Task GuildOnlyCommand()
             => ReplyAsync("Nothing to see here!");
-        
-        [Command("santa")]
-        [RequireContext(ContextType.Guild)]
-        [RequireOwner()]
-        public async Task SecretSantaAsync(params IGuildUser[] users) {
-            foreach(var u in users)
-            {
-                Console.WriteLine(u.ToString());
-            }
-
-            var lots = new List<IGuildUser>(users);
-            var userNames = "";
-            foreach (IGuildUser u in users)
-            {
-                var name = string.IsNullOrEmpty(u.Nickname) ? u.Username : u.Nickname;
-                userNames += name + " ";
-            }
-            await ReplyAsync("Starting Secret Santa with the following users:\n" + userNames);
-
-            foreach (IGuildUser u in users)
-            {
-                var result = Draw(u, lots);
-                await u.SendMessageAsync($"You drew {result.Username}.");
-            }
-            await ReplyAsync("Secret Santa drawing finished.");
-        }
-
-        private IGuildUser Draw(IGuildUser drawer, List<IGuildUser> lots)
-        {
-            Random rnd = new Random();
-            int index = rnd.Next(lots.Count);
-            var pick = lots[index];
-            while (pick.Id == drawer.Id)
-            {
-                index = rnd.Next(lots.Count);
-                pick = lots[index];
-            }
-            lots.RemoveAt(index);
-            return pick;
-        }
     }
 }
