@@ -71,5 +71,18 @@ namespace SillBot.Modules
         [RequireContext(ContextType.Guild, ErrorMessage = "Sorry, this command must be ran from within a server, not a DM!")]
         public Task GuildOnlyCommand()
             => ReplyAsync("Nothing to see here!");
+
+        [Command("users")]
+        [RequireContext(ContextType.Guild)]
+        public async Task UsersAsync()
+        {
+            var response = "";
+            var guild = Context.Guild;
+            foreach (var user in guild.Users)
+            {
+                response += user.Username + " ";
+            }
+            await ReplyAsync(response);
+        }
     }
 }
