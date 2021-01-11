@@ -51,11 +51,17 @@ namespace SillBot
         private ServiceProvider ConfigureServices()
         {
             return new ServiceCollection()
-                .AddSingleton<DiscordSocketClient>()
+                .AddSingleton<DiscordSocketClient>(s => new DiscordSocketClient(new DiscordSocketConfig
+                {
+                    MessageCacheSize = 100,
+                    AlwaysDownloadUsers = true
+                }))
                 .AddSingleton<CommandService>()
                 .AddSingleton<CommandHandlingService>()
                 .AddSingleton<HttpClient>()
                 .AddSingleton<PictureService>()
+                .AddSingleton<FactionManager>()
+                .AddSingleton<RanceService>()
                 .BuildServiceProvider();
         }
     }

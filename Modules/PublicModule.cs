@@ -1,7 +1,5 @@
 using System;
 using System.IO;
-using System.Linq;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -84,44 +82,6 @@ namespace SillBot.Modules
             {
                 response += user.Username + " ";
             }
-            await ReplyAsync(response);
-        }
-
-        [Command("teams")]
-        [RequireContext(ContextType.Guild)]
-        public async Task TeamsAsync(int memberCount)
-        {
-            var users = Context.Guild.Users.Where(user => !user.IsBot);
-            users = users.Shuffle();
-            
-            int teamCount = (users.Count() - 1) / memberCount + 1;
-
-            List<List<string>> teams = new List<List<string>>();
-
-            for (int i = 0; i < teamCount; i++)
-            {
-                teams.Add(new List<string>());
-            }
-
-            int counter = 0;
-            foreach (var user in users)
-            {
-                int teamIndex = (counter / memberCount);
-                teams[teamIndex].Add(user.Username);
-                counter++;
-            }
-
-            var response = "";
-
-            counter = 1;
-            foreach (var team in teams)
-            {
-                response += $"Team {counter}: ";
-                response += string.Join(", ", team.ToArray());
-                response += "\n";
-                counter++;
-            }
-
             await ReplyAsync(response);
         }
     }

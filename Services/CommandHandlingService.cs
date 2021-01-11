@@ -25,6 +25,7 @@ namespace SillBot.Services
             // Hook MessageReceived so we can process each message to see
             // if it qualifies as a command.
             _discord.MessageReceived += MessageReceivedAsync;
+            _discord.ReactionAdded += ReactionAddedAsync;
         }
 
         public async Task InitializeAsync()
@@ -68,6 +69,18 @@ namespace SillBot.Services
             // the command failed, let's notify the user that something happened.
             await context.Channel.SendMessageAsync($"error: {result.Error}");
             await context.Channel.SendMessageAsync($"error: {result.ErrorReason}");
+        }
+
+        public async Task ReactionAddedAsync(Cacheable<IUserMessage, ulong> cachedMessage,
+            ISocketMessageChannel originChannel, SocketReaction reaction)
+        {
+            var message = await cachedMessage.GetOrDownloadAsync();
+            if (message != null && reaction.User.IsSpecified)
+            {
+                Console.WriteLine(
+                    $"{reaction.User.Value} just added a reaction '{reaction.Emote}' " +
+                    $"to {message.Author}'s message ({message.Id}).");
+            }
         }
     }
 }
