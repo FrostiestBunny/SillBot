@@ -1,18 +1,24 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using SillBot.Models;
 using SillBot.Utils;
+using Discord;
+using Discord.WebSocket;
 
 namespace SillBot.Services
 {
     public class RanceService
     {
         private readonly FactionManager _factionManager;
+        private readonly CommandHandlingService _commandHandlingService;
 
-        public RanceService(FactionManager fm)
+        public RanceService(FactionManager fm, CommandHandlingService chm)
         {
             _factionManager = fm;
             _factionManager.Init();
+            _commandHandlingService = chm;
         }
 
         public List<List<string>> FormTeams(int memberCount, 
@@ -51,6 +57,12 @@ namespace SillBot.Services
             var assignedFactions = factions.Take(players.Count()).ToList();
 
             return assignedFactions;
+        }
+
+        public async Task<SocketReaction> WaitForReactionAsync(ulong Id, List<IEmote> emotes)
+        {
+            var reaction = await _commandHandlingService.AddReactionAwaiter(Id, emotes);
+            return reaction;
         }
     }
 }

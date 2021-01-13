@@ -1,6 +1,8 @@
 using System;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Discord;
 using Discord.Commands;
@@ -13,12 +15,16 @@ namespace SillBot.Services
         private readonly CommandService _commands;
         private readonly DiscordSocketClient _discord;
         private readonly IServiceProvider _services;
+        private readonly Dictionary<ulong, TaskCompletionSource<SocketReaction>> _reactionAwaiters;
+        private readonly Dictionary<ulong, List<IEmote>> _reactionEmotes;
 
         public CommandHandlingService(IServiceProvider services)
         {
             _commands = services.GetRequiredService<CommandService>();
             _discord = services.GetRequiredService<DiscordSocketClient>();
             _services = services;
+            _reactionAwaiters = new Dictionary<ulong, TaskCompletionSource<SocketReaction>>();
+            _reactionEmotes = new Dictionary<ulong, List<IEmote>>();
 
             // Hook CommandExecuted to handle post-command-execution logic.
             _commands.CommandExecuted += CommandExecutedAsync;
@@ -51,7 +57,9 @@ namespace SillBot.Services
             // Perform the execution of the command. In this method,
             // the command service will perform precondition and parsing check
             // then execute the command if one is matched.
-            await _commands.ExecuteAsync(context, argPos, _services); 
+            // TODO Is there no way to use await here without blocking other commands?
+            _commands.ExecuteAsync(context, argPos, _services);
+            
             // Note that normally a result will be returned by this format, but here
             // we will handle the result in CommandExecutedAsync,
         }
@@ -80,7 +88,28 @@ namespace SillBot.Services
                 Console.WriteLine(
                     $"{reaction.User.Value} just added a reaction '{reaction.Emote}' " +
                     $"to {message.Author}'s message ({message.Id}).");
+                
+                Console.WriteLine($"{reaction.UserId} - {_discord.CurrentUser.Id}");
+
+                if (_reactionAwaiters.ContainsKey(message.Id) && reaction.UserId != _discord.CurrentUser.Id)
+                {
+                    Console.WriteLine($"Found awaited message");
+                    var emotes = _reactionEmotes[message.Id];
+                    if (emotes.Contains(reaction.Emote))
+                    {
+                        _reactionAwaiters[message.Id].SetResult(reaction);
+                        _reactionAwaiters.Remove(message.Id);
+                    }
+                }
             }
+        }
+
+        public Task<SocketReaction> AddReactionAwaiter(ulong Id, List<IEmote> emotes)
+        {
+            var tcs = new TaskCompletionSource<SocketReaction>();
+            _reactionAwaiters.Add(Id, tcs);
+            _reactionEmotes.Add(Id, emotes);
+            return tcs.Task;
         }
     }
 }

@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 using Discord;
@@ -39,7 +41,27 @@ namespace SillBot.Modules
         public async Task FactionsAsync()
         {
             var users = Context.Guild.Users.Where(user => !user.IsBot);
-            var factions = RanceService.AssignFactions(users, false);
+
+            var embed = new EmbedBuilder
+            {
+                Description = "Include fiends?",
+                Color = Color.DarkGreen
+            };
+            embed.WithAuthor(Context.Client.CurrentUser)
+                .WithCurrentTimestamp();
+
+            var message = await ReplyAsync(embed: embed.Build());
+            var yes_emoji = new Emoji("✅");
+            var no_emoji = new Emoji("❌");
+            var emotes = new List<IEmote>();
+            emotes.Add(yes_emoji);
+            emotes.Add(no_emoji);
+            await message.AddReactionsAsync(emotes.ToArray());
+
+            var reaction = await RanceService.WaitForReactionAsync(message.Id, emotes);
+            var addFiends = reaction.Emote.ToString() == yes_emoji.ToString();
+
+            var factions = RanceService.AssignFactions(users, addFiends);
 
             var response = new EmbedBuilder
             {
