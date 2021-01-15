@@ -83,5 +83,13 @@ namespace SillBot.Modules
 
             await ReplyAsync(embed: response.Build());
         }
+
+        [Command("logout")]
+        [RequireOwner()]
+        public async Task LogoutAsync()
+        {
+            await ReplyAsync("Going to sleep, bye.");
+            await RanceService.LogoutAsync();
+        }
     }
 }

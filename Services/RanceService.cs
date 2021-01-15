@@ -64,5 +64,11 @@ namespace SillBot.Services
             var reaction = await _commandHandlingService.AddReactionAwaiter(Id, emotes);
             return reaction;
         }
+
+        public async Task LogoutAsync()
+        {
+            await _commandHandlingService.LogoutAsync();
+            Environment.Exit(0);
+        }
     }
 }

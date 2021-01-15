@@ -111,5 +111,10 @@ namespace SillBot.Services
             _reactionEmotes.Add(Id, emotes);
             return tcs.Task;
         }
+
+        public async Task LogoutAsync()
+        {   
+            await _discord.StopAsync();
+        }
     }
 }
